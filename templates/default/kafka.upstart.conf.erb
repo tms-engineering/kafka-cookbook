@@ -1,0 +1,19 @@
+#!upstart
+
+description "Kafka Server"
+
+env USER=<%= @user %>
+env BINARY=<%= @kafka_dir %>/bin/kafka-server-start.sh
+env CONFIG=<%= @kafka_dir %>/config/<%= @config %>
+env JMX_PORT=<%= @jmx_port %>
+
+start on startup
+stop on shutdown
+
+respawn
+
+exec sudo -u $USER JMX_PORT=$JMX_PORT $BINARY $CONFIG
+
+post-start script
+  <%= @status_script %> || { stop ; exit 1; }
+end script

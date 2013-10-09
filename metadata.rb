@@ -1,19 +1,17 @@
 # encoding: utf-8
 
 name             'kafka'
-maintainer       'Mathias Söderberg'
-maintainer_email 'mths@sdrbrg.se'
+maintainer       'Brian Schroeder'
+maintainer_email 'bschroeder@tribune.com'
 license          'Apache 2.0'
-description      'Installs and configures a Kafka broker'
+description      'Installs and runs Kafka 0.8 on CentOS'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.0.1'
-
-recipe 'kafka', 'Setups up Kafka environment with directories and configuration files'
-recipe 'kafka::source', 'Downloads, compiles and installs Kafka from source releases'
-recipe 'kafka::binary', 'Downloads, extracts and installs Kafka from binary releases'
-recipe 'kafka::standalone', 'Setups standalone ZooKeeper instance using the ZooKeeper version that is bundled with Kafka'
+version          '0.1.0'
 
 depends 'java', '~> 1.11.6'
+# ZK is only needed for development, but its attributes aren't pulled in
+# correctly if this isn't listed here:
+depends 'zookeeper', '~> 1.4.6'
 
 %w[centos].each do |os|
   supports os

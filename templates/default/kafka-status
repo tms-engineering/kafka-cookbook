@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# TODO: actually check that kafka is up:
+echo "Saying that kafka is up, even though we haven't checked."
+exit 0
