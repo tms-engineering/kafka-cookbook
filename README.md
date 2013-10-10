@@ -1,30 +1,30 @@
 # Description
 
-[![Build Status](https://travis-ci.org/mthssdrbrg/kafka-cookbook.png?branch=master)](https://travis-ci.org/mthssdrbrg/kafka-cookbook)
+[![Build Status](https://travis-ci.org/tms-engineering/kafka-cookbook.png?branch=master)](https://travis-ci.org/tms-engineering/kafka-cookbook)
 
-Installs Kafka ``0.8.0-beta1``, and probably any higher version, whenever they are
-released. Given that they don't change URLs and the like.
+Installs a recent version of Kafka 0.8.0-beta1, which is currently under
+development.
 
-Based on the Kafka cookbook released by WebTrends (thanks!), but with a few
-notable differences:
+Based on the Kafka cookbook initially released by WebTrends and then modified
+by Mathias Söderberg (thanks!), but with a few notable differences:
 
-* supports both source and binary releases (of Kafka ``0.8.0-beta1``).
-* does not depend on runit cookbook.
-* does not depend on zookeeper cookbook, thus it will not search for nodes with
-  a specific role or such, that is left up to you to decide.
-* only tested with a CentOS Vagrant box.
-* intended to be used by wrapper cookbooks.
+* uses upstart to run the service
+* supports only building from source
+* does not depend on runit cookbook
+* uses the ZK cookbook in development instead of the ZK bundled with Kafka for
+  simplicity's sake
+* only tested with a CentOS 6.3 Vagrant box
 
 # Requirements
-* Java cookbook ``~> 1.11.6``
+
+* java ~> 1.11.6
+* zookeeper ~> 1.4.6
+
+We would like to remove the zookeeper dependency (and use it only during
+testing via `Berksfile`), but doing so results in the zookeeper cookbook's
+attributes not getting pulled in correctly at the moment.
 
 # Attributes
-This section describes all the attributes that are currently available for
-configuration of where to install Kafka and Kafka's configuration. (Having two
-consecutive headers without any text between them make me cringe).
-
-## default
-The following attributes are used for setting up the 'environment' for Kafka.
 
 * ``node[:kafka][:version]`` - The Kafka version install and use.
 * ``node[:kafka][:base_url]`` - URL for Kafka releases.
@@ -34,6 +34,7 @@ The following attributes are used for setting up the 'environment' for Kafka.
 * ``node[:kafka][:log_dir]`` - Location for Kafka log4j logs.
 * ``node[:kafka][:user]`` - User to use for directories and to run Kafka.
 * ``node[:kafka][:group]`` - Group for user defined in bullet point above.
+* ``node[:kafka][:script_dir]`` - Location where the service status-checking script is installed.
 * ``node[:kafka][:log_level]`` - Log level for Kafka logs (and ZooKeeper, for further
   information see below).
 * ``node[:kafka][:log4j_config]`` - Name of log4j configuration file (should
@@ -42,11 +43,6 @@ The following attributes are used for setting up the 'environment' for Kafka.
   include extension as well). Will use 'server.properties' by default.
 * ``node[:kafka][:jmx_port]`` - JMX port for Kafka.
 
-## kafka
-The following attributes are used for the Kafka broker configuration and are
-divided into logical sections according to the official Kafka configuration.
-
-### General broker configuration attributes
 * ``node[:kafka][:broker_id]`` - The id of the broker. This must be set to a unique integer
   for each broker. If not set, it will default to using the machine's ip address
   (without the dots).
@@ -54,13 +50,12 @@ divided into logical sections according to the official Kafka configuration.
   use the host name returned from
 ``java.net.InetAddress.getCanonicalHostName()``, which might not be what you want.
 * ``node[:kafka][:port]`` - The port Kafka will listen on for incoming requests.
-* ``node[:kafka][network_threads]`` - The number of threads handling network requests.
+* ``node[:kafka][:network_threads]`` - The number of threads handling network requests.
 * ``node[:kafka][:io_threads]`` - The number of threads doing disk I/O.
-* ``node[:kafka][num_partitions]`` - The number of logical partitions per topic per server.
+* ``node[:kafka][:num_partitions]`` - The number of logical partitions per topic per server.
   More partitions allow greater parallelism for consumption, but also mean more
   files.
 
-### Socket server attributes
 * ``node[:kafka][:socket][:send_buffer_bytes]`` - The send buffer (``SO_SNDBUF``) used by the
   socket server.
 * ``node[:kafka][:socket][:receive_buffer_bytes]`` - The receive buffer (``SO_RCVBUF``) used by
@@ -68,7 +63,6 @@ divided into logical sections according to the official Kafka configuration.
 * ``node[:kafka][:socket][:request_max_bytes]`` - The maximum size of a request that the
   socket server will accept (protection against out of memory).
 
-### Log and flush policy attributes
 * ``node[:kafka][:log][:dirs]`` - The directory under which Kafka will store log files.
 * ``node[:kafka][:log][:flush_interval_messages]`` - The number of messages to accept before
   forcing a flush of data to disk.
@@ -84,71 +78,35 @@ divided into logical sections according to the official Kafka configuration.
 * ``node[:kafka][:log][:cleanup_interval_mins]`` - The interval at which log segments are
   checked to see if they can be deleted according to the retention policies.
 
-### ZooKeeper attributes
 * ``node[:kafka][:zookeeper][:connect]`` - A list of zookeeper nodes to connect to.
 * ``node[:kafka][:zookeeper][:timeout]`` - Timeout in milliseconds for connecting to ZooKeeper.
 
-### Metric attributes
 * ``node[:kafka][:metrics][:polling_interval]`` - Polling interval for metrics.
 * ``node[:kafka][:metrics][:reporters]`` - Metric reporters to be used.
 
-#### CSV metric attributes
 * ``node[:kafka][:csv_metrics][:dir]`` - Directory path for saving metrics.
 * ``node[:kafka][:csv_metrics][:reporter_enabled]`` - Enable/disable CSV metrics reporter.
 
-## zookeeper
-The following attributes are used to configure ZooKeeper when using the
-``kafka::standalone`` recipe, see below for further information.
-
-* ``node[:zookeeper][:data_dir]`` - Path where to store ZooKeeper data.
-* ``node[:zookeeper][:log_dir]`` - Where to store ZooKeeper logs.
-* ``node[:zookeeper][:port]`` - Port for ZooKeeper to listen for incoming connections.
-* ``node[:zookeeper][:max_client_connections]`` - Maximum number of connections per client.
-* ``node[:zookeeper][:jmx_port]`` - JMX port for ZooKeeper.
-
 # Recipes
-This section describes the different recipes that exists, and how to use them.
 
-## default
-Sets up ``broker_id`` and ``host_name``, and creates necessary directories for
-installing Kafka, as well as a quite crude ``init.d`` script.
-This recipe is included by both ``kafka::source`` and ``kafka::binary`` recipes.
+* environment: creates the user, group, log directory, and data directory for Kafka
+* install: fetches, builds, and installs Kafka 0.8 from source
+* configure: copies log4j and kafka configuration from templates into the installation
+* upstart: creates an upstart service for Kafka
 
-## source
-Downloads, compiles and installs Kafka from the official source releases.
-Defaults to using ``0.8.0-beta1`` as Kafka version.
-
-This recipe will not automatically start/restart Kafka as that is left up to the
-user to decide.
-
-## binary
-Downloads and installs Kafka from the official binary releases.
-Defaults to using ``0.8.0-beta1`` as Kafka version.
-
-This recipe will not automatically start/restart Kafka as that is left up to the
-user to decide.
-
-## standalone
-Sets up a standalone ZooKeeper server, using the ZooKeeper version that is
-bundled with Kafka.
-This recipe does not include ``kafka::source`` nor ``kafka::binary`` recipes and
-must be specified separately after either ``kafka::source`` or
-``kafka::binary``.
-
-This should not be used in production (Kafka and ZooKeeper should generally not
-run on the same machine) and is just useful for testing (i.e. in Vagrant or
-other testing environment).
+* default: performs all of the above
 
 # Known bugs & limitations
-* ``init.d`` scripts run Kafka and ZooKeeper processes as root.
-* ``init.d`` scripts are hell and needs to be properly fixed.
+
+* We would like to remove the zookeeper cookbook dependency outside of development
 * No support for Ubuntu/Debian.
 * Not tested with other RHEL distributions (Fedora/Amazon/etc).
 * No support for per-topic overrides for ``node[:kafka][:log][:flush_interval_ms]``.
 * Not sure if all configuration parameters for Kafka are supported at this time.
 
-# License and author:
-Copyright :: 2013 Mathias Söderberg
+# License
+
+Copyright :: 2013 Mathias Söderberg, Brian Schroeder
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -162,8 +120,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Contributing
-------------
+# Contributing
 
 1. Fork the repository on Github
 2. Create a named feature branch (like `add_component_x`)

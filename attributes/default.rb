@@ -5,7 +5,7 @@
 
 default[:kafka][:version] = '0.8.0-beta1'
 
-# Until there's a newer release where bin scripts allow the use of scala 2.9.2:
+# Until there's a newer release where bin scripts allow the use of scala 2.9.2, use a custom tarball of the source from HEAD:
 default[:kafka][:base_url] = 'https://dl.dropboxusercontent.com/s/vcb0g3h73n3xajl/'
 default[:kafka][:checksum] = '5309636e433591b4c242cfc95a0a8b00'
 # default[:kafka][:base_url] = 'https://dist.apache.org/repos/dist/release/kafka'
@@ -15,20 +15,20 @@ default[:kafka][:scala_version] = '2.9.2'
 default[:kafka][:install_dir] = '/opt/kafka'
 default[:kafka][:data_dir] = '/var/kafka'
 default[:kafka][:log_dir] = '/var/log/kafka'
-default[:kafka][:script_dir] = '/usr/local/bin'
-default[:kafka][:log4j_config] = 'log4j.properties'
-default[:kafka][:config] = 'server.properties'
 default[:kafka][:user] = 'kafka'
 default[:kafka][:group] = 'kafka'
+default[:kafka][:script_dir] = '/usr/local/bin'
+default[:kafka][:log_level] = "INFO"
+default[:kafka][:log4j_config] = 'log4j.properties'
+default[:kafka][:config] = 'server.properties'
+default[:kafka][:jmx_port] = 9999
 
 default[:kafka][:broker_id] = node[:ipaddress].gsub('.', '')
 default[:kafka][:host_name] = node[:fqdn]
 default[:kafka][:port] = 9092
-default[:kafka][:jmx_port] = 9999
 default[:kafka][:network_threads] = 2
 default[:kafka][:io_threads] = 2
 default[:kafka][:num_partitions] = 1
-default[:kafka][:log_level] = "INFO"
 
 default[:kafka][:socket][:send_buffer_bytes] = 1048576
 default[:kafka][:socket][:receive_buffer_bytes] = 1048576
@@ -42,7 +42,6 @@ default[:kafka][:log][:retention_bytes] = 1073741824
 default[:kafka][:log][:segment_bytes] = 536870912
 default[:kafka][:log][:cleanup_interval_mins] = 1
 
-# DOWNSTREAM CLIENTS SHOULD SET THIS:
 default[:kafka][:zookeeper][:connect] = []
 default[:kafka][:zookeeper][:timeout] = 1000000
 
