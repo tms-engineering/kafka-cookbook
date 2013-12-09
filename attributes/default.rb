@@ -3,13 +3,10 @@
 # Attributes:: default
 #
 
-default[:kafka][:version] = '0.8.0-beta1'
+default[:kafka][:version] = '0.8.0'
 
-# Until there's a newer release where bin scripts allow the use of scala 2.9.2, use a custom tarball of the source from HEAD:
-default[:kafka][:base_url] = 'https://dl.dropboxusercontent.com/s/vcb0g3h73n3xajl/'
-default[:kafka][:checksum] = '5309636e433591b4c242cfc95a0a8b00'
-# default[:kafka][:base_url] = 'https://dist.apache.org/repos/dist/release/kafka'
-# default[:kafka][:checksum] = 'e069a1d5e47d18944376b6ca30b625dc013045e7e1f948054ef3789a4b5f54b3'
+default[:kafka][:base_url] = 'http://mirrors.ibiblio.org/apache/kafka'
+default[:kafka][:checksum] = '46b3e65e38f1bde4b6251ea131d905f4'
 
 default[:kafka][:scala_version] = '2.9.2'
 default[:kafka][:install_dir] = '/opt/kafka'
