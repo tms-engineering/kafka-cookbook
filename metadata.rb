@@ -6,7 +6,7 @@ maintainer_email 'bschroeder@tribune.com'
 license          'Apache 2.0'
 description      'Installs and runs Kafka 0.8 on CentOS'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.1.1'
+version          '0.1.2'
 
 depends 'java', '~> 1.11.6'
 # ZK is only needed for development, but its attributes aren't pulled in
