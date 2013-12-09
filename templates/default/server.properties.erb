@@ -51,7 +51,7 @@ socket.request.max.bytes=<%= node[:kafka][:socket][:request_max_bytes] %>
 ############################# Log Basics #############################
 
 # The directory under which to store log files
-log.dirs=<%= node[:kafka][:log][:dirs] %>
+log.dirs=<%= node[:kafka][:data_dir] %>
 
 # The number of logical partitions per topic per server. More partitions allow greater parallelism
 # for consumption, but also mean more files.

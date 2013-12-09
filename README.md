@@ -31,6 +31,7 @@ attributes not getting pulled in correctly at the moment.
 * ``node[:kafka][:checksum]`` - MD5 checksum for release to use.
 * ``node[:kafka][:scala_version]`` - Scala version for Kafka.
 * ``node[:kafka][:install_dir]`` - Location for Kafka to be installed.
+* ``node[:kafka][:data_dir]`` - The directory under which Kafka will store log files.
 * ``node[:kafka][:log_dir]`` - Location for Kafka log4j logs.
 * ``node[:kafka][:user]`` - User to use for directories and to run Kafka.
 * ``node[:kafka][:group]`` - Group for user defined in bullet point above.
@@ -63,7 +64,6 @@ attributes not getting pulled in correctly at the moment.
 * ``node[:kafka][:socket][:request_max_bytes]`` - The maximum size of a request that the
   socket server will accept (protection against out of memory).
 
-* ``node[:kafka][:log][:dirs]`` - The directory under which Kafka will store log files.
 * ``node[:kafka][:log][:flush_interval_messages]`` - The number of messages to accept before
   forcing a flush of data to disk.
 * ``node[:kafka][:log][:flush_interval_ms]`` - The maximum amount of time a message can sit

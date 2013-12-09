@@ -31,7 +31,6 @@ default[:kafka][:socket][:send_buffer_bytes] = 1048576
 default[:kafka][:socket][:receive_buffer_bytes] = 1048576
 default[:kafka][:socket][:request_max_bytes] = 104857600
 
-default[:kafka][:log][:dirs] = '/tmp/kafka-logs'
 default[:kafka][:log][:flush_interval_messages] = 10000
 default[:kafka][:log][:flush_interval_ms] = 1000
 default[:kafka][:log][:retention_hours] = 168
