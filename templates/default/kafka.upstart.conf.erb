@@ -7,8 +7,8 @@ env BINARY=<%= @kafka_dir %>/bin/kafka-server-start.sh
 env CONFIG=<%= @kafka_dir %>/config/<%= @config %>
 env JMX_PORT=<%= @jmx_port %>
 
-start on startup
-stop on shutdown
+start on runlevel [2345]
+stop on runlevel [!2345]
 
 respawn
 
