@@ -33,8 +33,8 @@ default[:kafka][:socket][:request_max_bytes] = 104857600
 
 default[:kafka][:log][:flush_interval_messages] = 10000
 default[:kafka][:log][:flush_interval_ms] = 1000
-default[:kafka][:log][:retention_hours] = 168
-default[:kafka][:log][:retention_bytes] = 1073741824
+default[:kafka][:log][:retention_hours] = 336
+default[:kafka][:log][:retention_bytes] = -1
 default[:kafka][:log][:segment_bytes] = 536870912
 default[:kafka][:log][:cleanup_interval_mins] = 1
 
